@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Subasta — Google Ads</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a18; padding: 2rem; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #888780; margin-bottom: 1.5rem; }
+  .card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .section-title { font-size: 13px; font-weight: 500; color: #888780; margin-bottom: 10px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .slider-label { font-size: 12px; color: #888780; min-width: 90px; }
+  .slider-val { font-size: 12px; font-weight: 500; color: #1a1a18; min-width: 36px; text-align: right; }
+  input[type=range] { flex: 1; accent-color: #534AB7; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 1rem; }
+  .anunciante-title { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .anunciante { font-size: 13px; font-weight: 500; color: #1a1a18; min-width: 110px; }
+  .bar-bg { flex: 1; background: #f1efe8; border-radius: 4px; height: 28px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: 500; transition: width 0.5s ease; }
+  .bar-a { background: #EEEDFE; color: #3C3489; }
+  .bar-b { background: #E1F5EE; color: #085041; }
+  .bar-c { background: #FAEEDA; color: #633806; }
+  .result-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid #d3d1c7; }
+  .result-row:last-child { border-bottom: none; }
+  .pos { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .pos-1 { background: #EEEDFE; color: #3C3489; }
+  .pos-2 { background: #E1F5EE; color: #085041; }
+  .pos-3 { background: #FAEEDA; color: #633806; }
+  .result-name { font-size: 13px; font-weight: 500; color: #1a1a18; min-width: 110px; }
+  .result-info { flex: 1; font-size: 12px; color: #888780; }
+  .result-cost { font-size: 13px; font-weight: 500; color: #1a1a18; text-align: right; min-width: 110px; }
+  .tip { font-size: 12px; color: #888780; margin-top: 10px; line-height: 1.6; background: #f1efe8; border-radius: 8px; padding: 10px 14px; }
+  .formula-note { font-size: 12px; color: #888780; margin-top: 8px; }
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .grid3 { grid-template-columns: 1fr; }
+    .result-info { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Simulador de Subasta — Google Ads</h1>
+<p class="subtitle">Ad Rank = Oferta × Quality Score. El que más paga no siempre gana.</p>
+
+<div class="card">
+  <div class="section-title">Ajusta los valores de cada anunciante</div>
+  <div class="grid3">
+    <div>
+      <div class="anunciante-title" style="color:#3C3489;">Anunciante A</div>
+      <div class="slider-row"><span class="slider-label">Oferta (CPC)</span><input type="range" id="bid-a" min="1" max="10" value="5" step="0.5"><span class="slider-val" id="v-bid-a">$5.0</span></div>
+      <div class="slider-row"><span class="slider-label">Quality Score</span><input type="range" id="qs-a" min="1" max="10" value="8" step="1"><span class="slider-val" id="v-qs-a">8/10</span></div>
+    </div>
+    <div>
+      <div class="anunciante-title" style="color:#085041;">Anunciante B</div>
+      <div class="slider-row"><span class="slider-label">Oferta (CPC)</span><input type="range" id="bid-b" min="1" max="10" value="8" step="0.5"><span class="slider-val" id="v-bid-b">$8.0</span></div>
+      <div class="slider-row"><span class="slider-label">Quality Score</span><input type="range" id="qs-b" min="1" max="10" value="4" step="1"><span class="slider-val" id="v-qs-b">4/10</span></div>
+    </div>
+    <div>
+      <div class="anunciante-title" style="color:#633806;">Anunciante C</div>
+      <div class="slider-row"><span class="slider-label">Oferta (CPC)</span><input type="range" id="bid-c" min="1" max="10" value="3" step="0.5"><span class="slider-val" id="v-bid-c">$3.0</span></div>
+      <div class="slider-row"><span class="slider-label">Quality Score</span><input type="range" id="qs-c" min="1" max="10" value="10" step="1"><span class="slider-val" id="v-qs-c">10/10</span></div>
+    </div>
+  </div>
+  <p class="formula-note">⚠️ En la realidad, el Quality Score lo asigna Google automáticamente (1–10) según la relevancia de tu anuncio, CTR esperado y experiencia en la landing page. Aquí lo podés ajustar manualmente para entender cómo afecta el resultado.</p>
+</div>
+
+<div class="card">
+  <div class="section-title">Ad Rank de cada anunciante</div>
+  <div id="bars-container"></div>
+</div>
+
+<div class="card">
+  <div class="section-title">Resultado de la subasta</div>
+  <div id="results-container"></div>
+  <div class="tip" id="insight"></div>
+</div>
+
+<script>
+const anunciantes = [
+  { id: 'a', nombre: 'Anunciante A', barClass: 'bar-a' },
+  { id: 'b', nombre: 'Anunciante B', barClass: 'bar-b' },
+  { id: 'c', nombre: 'Anunciante C', barClass: 'bar-c' },
+];
+const posColors = ['pos-1','pos-2','pos-3'];
+const posLabels = ['1°','2°','3°'];
+
+function getVals() {
+  return anunciantes.map(a => ({
+    ...a,
+    bid: parseFloat(document.getElementById('bid-' + a.id).value),
+    qs: parseInt(document.getElementById('qs-' + a.id).value),
+  })).map(a => ({ ...a, adRank: parseFloat((a.bid * a.qs).toFixed(1)) }));
+}
+
+function update() {
+  const vals = getVals();
+  anunciantes.forEach(a => {
+    const v = vals.find(x => x.id === a.id);
+    document.getElementById('v-bid-' + a.id).textContent = '$' + v.bid.toFixed(1);
+    document.getElementById('v-qs-' + a.id).textContent = v.qs + '/10';
+  });
+
+  const maxRank = Math.max(...vals.map(v => v.adRank));
+  document.getElementById('bars-container').innerHTML = vals.map(v => `
+    <div class="row">
+      <span class="anunciante">${v.nombre}</span>
+      <div class="bar-bg">
+        <div class="bar-fill ${v.barClass}" style="width:${Math.round((v.adRank/maxRank)*100)}%">
+          Ad Rank: ${v.adRank}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const sorted = [...vals].sort((a, b) => b.adRank - a.adRank);
+  document.getElementById('results-container').innerHTML = sorted.map((v, i) => {
+    const siguiente = sorted[i + 1];
+    const costoLabel = siguiente
+      ? '$' + ((siguiente.adRank / v.qs) + 0.01).toFixed(2) + ' por clic'
+      : '~$' + (v.bid * 0.5).toFixed(2) + ' por clic';
+    return `
+      <div class="result-row">
+        <div class="pos ${posColors[i]}">${posLabels[i]}</div>
+        <div class="result-name">${v.nombre}</div>
+        <div class="result-info">Oferta $${v.bid.toFixed(1)} · QS ${v.qs} · Ad Rank ${v.adRank}</div>
+        <div class="result-cost">${costoLabel}</div>
+      </div>
+    `;
+  }).join('');
+
+  const ganador = sorted[0];
+  const segundo = sorted[1];
+  let insight = '';
+  if (ganador.bid < segundo.bid) {
+    insight = `Dato clave: ${ganador.nombre} gana con una oferta menor ($${ganador.bid.toFixed(1)}) porque tiene mejor Quality Score (${ganador.qs} vs ${segundo.qs}). El que más paga no siempre gana.`;
+  } else if (ganador.qs > segundo.qs) {
+    insight = `${ganador.nombre} lidera por su Quality Score alto (${ganador.qs}/10), lo que también reduce el costo real que paga por clic.`;
+  } else {
+    insight = `${ganador.nombre} gana con el mayor Ad Rank (${ganador.adRank}). Recordá: el Ad Rank determina la posición, no la oferta sola.`;
+  }
+  document.getElementById('insight').textContent = '💡 ' + insight;
+}
+
+['a','b','c'].forEach(id => {
+  document.getElementById('bid-' + id).addEventListener('input', update);
+  document.getElementById('qs-' + id).addEventListener('input', update);
+});
+update();
+</script>
+</body>
+</html>
